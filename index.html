@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>TRANSFERBIZ | Футбольная платформа</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background: #0e1622; min-height: 100vh; }
+        .app-wrapper { max-width: 1400px; margin: 0 auto; background: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+        .header { background: #0a1a2e; color: white; padding: 16px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; border-bottom: 2px solid #c9a03d; }
+        .logo h1 { font-size: 1.8rem; letter-spacing: 2px; }
+        .logo p { font-size: 0.7rem; opacity: 0.7; }
+        .user-info { background: #1e2f44; padding: 8px 18px; border-radius: 40px; display: flex; gap: 15px; align-items: center; cursor: pointer; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #c9a03d; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #0a1a2e; }
+        .side-menu { background: #f5f7fc; border-right: 1px solid #dce4ec; width: 260px; padding: 20px 0; }
+        .side-menu a { display: block; padding: 12px 24px; color: #1e4663; text-decoration: none; font-weight: 500; border-left: 3px solid transparent; cursor: pointer; }
+        .side-menu a.active { background: #e9eef5; border-left-color: #c9a03d; font-weight: 700; }
+        .flex-row { display: flex; flex: 1; }
+        .content-area { flex: 1; padding: 24px 28px; }
+        .info-card { background: #fff; border-radius: 28px; padding: 20px; margin-bottom: 24px; border: 1px solid #eef2f8; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        button { background: #1d4e6e; border: none; color: white; padding: 8px 18px; border-radius: 40px; cursor: pointer; margin: 4px; }
+        button.danger { background: #8b3c2c; }
+        button.small { padding: 4px 12px; font-size: 0.7rem; }
+        input, select, textarea { padding: 8px 12px; border-radius: 40px; border: 1px solid #cbd5e6; margin: 4px; }
+        .league-table { width: 100%; border-collapse: collapse; }
+        .league-table th, .league-table td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .clubs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 16px; }
+        .club-card-main { background: #fafcff; border-radius: 24px; border: 1px solid #e2e9f2; overflow: hidden; transition: 0.1s; cursor: pointer; }
+        .club-card-main:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .club-header { background: #0a1a2e; color: white; padding: 16px; display: flex; align-items: center; gap: 16px; }
+        .club-emblem-main { width: 60px; height: 60px; object-fit: contain; border-radius: 12px; background: #fff; padding: 4px; }
+        .club-name-main { font-size: 1.2rem; font-weight: bold; }
+        .club-stadium-info { padding: 12px 16px; background: #f5f7fc; border-bottom: 1px solid #eef2f8; }
+        .stadium-photo { width: 100%; height: 100px; object-fit: cover; border-radius: 12px; margin-top: 8px; }
+        .club-trophies { padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 8px; border-bottom: 1px solid #eef2f8; }
+        .club-footer { padding: 12px 16px; text-align: right; font-size: 0.75rem; color: #6c86a3; }
+        .chat-fab { position: fixed; bottom: 20px; right: 20px; width: 55px; height: 55px; background: #0a1a2e; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 1.5rem; z-index: 1200; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .chat-window { position: fixed; bottom: 90px; right: 20px; width: 330px; height: 450px; background: #1e2a36; border-radius: 24px; display: flex; flex-direction: column; transform: scale(0); opacity: 0; transition: 0.2s; z-index: 1199; pointer-events: none; }
+        .chat-window.open { transform: scale(1); opacity: 1; pointer-events: auto; }
+        .chat-header { background: #0f212f; padding: 12px; border-radius: 24px 24px 0 0; color: white; display: flex; justify-content: space-between; }
+        .chat-messages-area { flex: 1; overflow-y: auto; padding: 12px; background: #f8fafd; }
+        .chat-input-row { display: flex; padding: 12px; background: white; border-radius: 0 0 24px 24px; gap: 8px; }
+        .chat-input-row input { flex: 1; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; overflow: auto; }
+        .modal-content { background: white; max-width: 900px; margin: 40px auto; border-radius: 40px; padding: 24px; }
+        .players-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .players-table th { text-align: left; background: #f0f3f8; padding: 12px 8px; }
+        .players-table td { padding: 10px 8px; border-bottom: 1px solid #eef2f7; }
+        .player-photo { width: 40px; height: 40px; object-fit: cover; border-radius: 50%; }
+        .form-badge { display: inline-block; width: 28px; text-align: center; padding: 2px 4px; border-radius: 8px; font-size: 0.7rem; font-weight: bold; margin: 0 2px; }
+        .form-win { background: #2a6b4e; color: white; }
+        .form-draw { background: #c9a03d; color: #1a1a2e; }
+        .form-loss { background: #8b3c2c; color: white; }
+        .search-filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eef2f8; }
+        .user-avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #c9a03d; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .pm-modal { max-width: 500px; }
+        .pm-messages { max-height: 300px; overflow-y: auto; margin-bottom: 16px; }
+        .pm-message { padding: 8px; margin: 4px 0; border-radius: 12px; }
+        .pm-message.own { background: #c9a03d20; text-align: right; }
+        .pm-message.other { background: #eef2f8; }
+        .ai-chat { margin-top: 16px; border-top: 1px solid #eef2f8; padding-top: 16px; }
+        .ai-messages { max-height: 250px; overflow-y: auto; margin-bottom: 12px; padding: 8px; background: #f8fafd; border-radius: 20px; }
+        .ai-message { padding: 8px; margin: 4px 0; border-radius: 12px; }
+        .ai-message.user { background: #c9a03d20; text-align: right; }
+        .ai-message.ai { background: #eef2f8; }
+        footer { text-align: center; padding: 16px; font-size: 0.7rem; background: #fafcff; border-top: 1px solid #eef2f8; }
+        @media (max-width: 760px) { .side-menu { width: 200px; } .chat-window { width: 290px; right: 10px; } }
+    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+<body>
+<div id="appRoot"></div>
+
+<script>
+    // ========== АДМИНЫ ПО TELEGRAM ID ==========
+    const ADMIN_IDS = ["5067540483", "1029504728", "755462453"];
+    
+    function isAdminByTelegramId(telegramId) {
+        return ADMIN_IDS.includes(String(telegramId));
+    }
+    
+    // ========== ВСТРОЕННЫЙ ФУТБОЛЬНЫЙ ЭКСПЕРТ ==========
+    let aiMessages = [];
+    
+    function getFootballAnswer(question) {
+        const q = question.toLowerCase();
+        if(q.includes('трансфер') || q.includes('переход')) return "Трансферные слухи в разделе 'Трансферы'. Администратор может добавлять слухи и завершённые переходы.";
+        if(q.includes('клуб') || q.includes('команда') || q.includes('состав')) return "Все клубы БПЛ и 2 лиги в разделе 'Клубы'. Нажмите на клуб для просмотра состава.";
+        if(q.includes('игрок') || q.includes('футболист')) return "Информация об игроках в карточке клуба. Администратор может добавлять игроков и менять их статистику.";
+        if(q.includes('таблиц') || q.includes('очк')) return "Таблица БПЛ и 2 лиги в соответствующих разделах. Победа = 5 очков, ничья = 3.";
+        if(q.includes('стадион')) return "Информация о стадионах в разделе 'Клубы'. Администратор может загружать фото стадионов.";
+        if(q.includes('спонсор')) return "Спонсоры клубов в разделе 'Спонсоры'.";
+        if(q.includes('админ') || q.includes('пароль')) return "Пароль администратора: 78830001888.";
+        if(q.includes('привет')) return "Здравствуйте! Добро пожаловать в TRANSFERBIZ.";
+        return "Я отвечаю на вопросы о трансферах, клубах, игроках, таблице БПЛ и спонсорах. Уточните вопрос.";
+    }
+    
+    async function askLocalAI(question) { return getFootballAnswer(question); }
+    
+    function renderAIPage() {
+        let html = `<div class="info-card">
+            <h3>🤖 Футбольный эксперт</h3>
+            <div style="font-size:0.8rem; margin-bottom:10px; color:#666;"><div>Статус: ✅ Готов</div><small>Задавайте вопросы о футболе, трансферах, клубах.</small></div>
+            <div class="ai-messages" id="aiMessagesList">${aiMessages.map(m => `<div class="ai-message ${m.role}"><b>${m.role === 'user' ? currentUser?.nickname || 'Вы' : 'Эксперт'}:</b> ${m.text}</div>`).join('')}</div>
+            <div style="display:flex; gap:8px;"><input type="text" id="aiInput" placeholder="Спросите о футболе..." style="flex:1;"><button onclick="askAIQuestion()">Отправить</button></div>
+            <div style="margin-top:8px; font-size:0.7rem; color:#888;">Мгновенные ответы, без загрузки моделей.</div>
+        </div>`;
+        document.getElementById("mainContent").innerHTML = html;
+        const msgsDiv = document.getElementById("aiMessagesList");
+        if(msgsDiv) msgsDiv.scrollTop = msgsDiv.scrollHeight;
+    }
+    
+    window.askAIQuestion = async function() {
+        let input = document.getElementById("aiInput");
+        let question = input.value.trim();
+        if(!question) return;
+        aiMessages.push({ role: 'user', text: question });
+        renderAIPage();
+        input.value = "";
+        const answer = await askLocalAI(question);
+        aiMessages.push({ role: 'ai', text: answer });
+        renderAIPage();
+    };
+    
+    // ========== TELEGRAM БОТ И ГРУППА ==========
+    const BOT_TOKEN = "8765728269:AAFuhod326tRfin5fWuDt2oP0n6CxwZ5ljo";
+    const CHAT_GROUP_ID = "-1003950012403";
+    const ADMIN_PASSWORD = "78830001888";
+    
+    // ========== ДАННЫЕ ==========
+    let currentUser = null;
+    let clubsData = {};
+    let bplStats = {};
+    let league2Stats = {};
+    let matchHistory = { bpl: [], league2: [] };
+    let globalNews = ["Добро пожаловать в TRANSFERBIZ", "Сезон БПЛ 2025/26 стартовал"];
+    let transferRumors = ["Лоренцо Лукка интерес из АПЛ (28 млн)", "Виньято продлевает контракт до 2029"];
+    let sponsorsData = {};
+    let cupBizaria = { participants: [], winners: [], supercup: { winner: "Skufoboys", year: 2025 } };
+    let wikiArticles = [{ title: "История БПЛ", content: "Основана в 2024. Победа = 5 очков, ничья = 3.", author: "admin" }];
+    let chatMessages = [];
+    let seasonStandings = {};
+    let currentSeason = "2025/2026";
+    let playerStats = {};
+    
+    // ========== ПОЛЬЗОВАТЕЛИ ==========
+    let registeredUsers = [];
+    let privateMessages = {};
+    
+    const BPL_CLUBS = ["Skufoboys","Suslikbet","Zabrod","Yantitus","Gerrcelona","Mongols","Ghostiya","Tsukengaster","Rofler United","Reninburg United","Kat","Peygo's Brigade","Mordochkin Union","Tajnyj Il'ya","Gudanov City","Bounchester","Legion IX"];
+    const LEAGUE2_CLUBS = ["Metropolitan 24","Fasolkaster","Imperial FC","Gaaga Musketeers","Stepanchuk","Vendi Vipers","Fomiva-Mitrich Albion","Griffins","Wilted Rose","Lashka Rovers","Lexus Galacticos","City Rom4ik","Aleksey Rangers","Kamil House","Red Eye Halil","Pony Hams","FC Grinanda","Stasgrad Giants","Bilyal Wanderers","Zhigul Glory"];
+    
+    function saveAll() {
+        localStorage.setItem("transferbiz_clubs", JSON.stringify(clubsData));
+        localStorage.setItem("transferbiz_bpl", JSON.stringify(bplStats));
+        localStorage.setItem("transferbiz_league2", JSON.stringify(league2Stats));
+        localStorage.setItem("transferbiz_matches", JSON.stringify(matchHistory));
+        localStorage.setItem("transferbiz_news", JSON.stringify(globalNews));
+        localStorage.setItem("transferbiz_rumors", JSON.stringify(transferRumors));
+        localStorage.setItem("transferbiz_sponsors", JSON.stringify(sponsorsData));
+        localStorage.setItem("transferbiz_cup", JSON.stringify(cupBizaria));
+        localStorage.setItem("transferbiz_wiki", JSON.stringify(wikiArticles));
+        localStorage.setItem("transferbiz_chat", JSON.stringify(chatMessages));
+        localStorage.setItem("transferbiz_seasons", JSON.stringify(seasonStandings));
+        localStorage.setItem("transferbiz_current_season", currentSeason);
+        localStorage.setItem("transferbiz_player_stats", JSON.stringify(playerStats));
+        localStorage.setItem("transferbiz_users", JSON.stringify(registeredUsers));
+        localStorage.setItem("transferbiz_pm", JSON.stringify(privateMessages));
+    }
+    
+    function loadAll() {
+        let c = localStorage.getItem("transferbiz_clubs"); if(c) clubsData = JSON.parse(c);
+        let b = localStorage.getItem("transferbiz_bpl"); if(b) bplStats = JSON.parse(b);
+        let l2 = localStorage.getItem("transferbiz_league2"); if(l2) league2Stats = JSON.parse(l2);
+        let m = localStorage.getItem("transferbiz_matches"); if(m) matchHistory = JSON.parse(m);
+        let n = localStorage.getItem("transferbiz_news"); if(n) globalNews = JSON.parse(n);
+        let r = localStorage.getItem("transferbiz_rumors"); if(r) transferRumors = JSON.parse(r);
+        let sp = localStorage.getItem("transferbiz_sponsors"); if(sp) sponsorsData = JSON.parse(sp);
+        let cup = localStorage.getItem("transferbiz_cup"); if(cup) cupBizaria = JSON.parse(cup);
+        let wiki = localStorage.getItem("transferbiz_wiki"); if(wiki) wikiArticles = JSON.parse(wiki);
+        let ch = localStorage.getItem("transferbiz_chat"); if(ch) chatMessages = JSON.parse(ch);
+        let seas = localStorage.getItem("transferbiz_seasons"); if(seas) seasonStandings = JSON.parse(seas);
+        let cs = localStorage.getItem("transferbiz_current_season"); if(cs) currentSeason = cs;
+        let ps = localStorage.getItem("transferbiz_player_stats"); if(ps) playerStats = JSON.parse(ps);
+        let u = localStorage.getItem("transferbiz_users"); if(u) registeredUsers = JSON.parse(u);
+        let pm = localStorage.getItem("transferbiz_pm"); if(pm) privateMessages = JSON.parse(pm);
+        
+        if(Object.keys(clubsData).length === 0) initClubs();
+        if(Object.keys(bplStats).length === 0) initStats();
+        if(Object.keys(sponsorsData).length === 0) initSponsors();
+        if(cupBizaria.participants.length === 0) cupBizaria.participants = [...BPL_CLUBS.slice(0,12)];
+    }
+    
+    function initClubs() {
+        [...BPL_CLUBS, ...LEAGUE2_CLUBS].forEach(name => {
+            clubsData[name] = {
+                name, league: BPL_CLUBS.includes(name) ? "bpl" : "league2",
+                emblem: null, stadium: { name: "Городской стадион", capacity: 10000, photo: null },
+                trophies: { bpl: 0, league2: 0, supercup: 0, cupBizaria: 0, lch: 0, le: 0, lk: 0 },
+                players: [], totalValue: 0,
+                lastMatches: []
+            };
+        });
+        saveAll();
+    }
+    
+    function initStats() {
+        BPL_CLUBS.forEach(c => { bplStats[c] = { played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0 }; });
+        LEAGUE2_CLUBS.forEach(c => { league2Stats[c] = { played: 0, wins: 0, draws: 0, losses: 0, goalsFor: 0, goalsAgainst: 0, points: 0 }; });
+        saveAll();
+    }
+    
+    function initSponsors() {
+        [...BPL_CLUBS, ...LEAGUE2_CLUBS].forEach(c => { sponsorsData[c] = { name: "Нет спонсора", amount: 0, duration: "2025-2026" }; });
+        saveAll();
+    }
+    
+    function recalcPoints(league) {
+        let stats = league === "bpl" ? bplStats : league2Stats;
+        for(let c in stats) stats[c].points = stats[c].wins * 5 + stats[c].draws * 3;
+        saveAll();
+    }
+    
+    function sendToTelegram(message) {
+        if(!BOT_TOKEN || !CHAT_GROUP_ID) return;
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_GROUP_ID, text: message })
+        }).catch(e => console.log("Ошибка отправки:", e));
+    }
+    
+    function loadChatHistory() {
+        if(!BOT_TOKEN || !CHAT_GROUP_ID) return;
+        fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?limit=50`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.ok && data.result) {
+                    let msgs = [];
+                    for(let u of data.result) {
+                        if(u.message && u.message.chat && u.message.chat.id.toString() === CHAT_GROUP_ID) {
+                            let txt = u.message.text;
+                            if(txt && !txt.startsWith('/')) msgs.push(txt);
+                        }
+                    }
+                    chatMessages = msgs.slice(-50);
+                    renderChat();
+                    saveAll();
+                }
+            }).catch(e => console.log("Ошибка загрузки чата:", e));
+    }
+    
+    function addChatMessage(text) {
+        if(!text.trim() || !currentUser) return;
+        let formatted = `${currentUser.nickname}: ${text}`;
+        chatMessages.push(formatted);
+        if(chatMessages.length > 100) chatMessages.shift();
+        saveAll();
+        renderChat();
+        sendToTelegram(formatted);
+    }
+    
+    // ========== АВТОРИЗАЦИЯ (Telegram WebApp + ручной вход) ==========
+    function showLogin() {
+        // Проверяем, открыт ли сайт внутри Telegram WebApp
+        if (window.Telegram && window.Telegram.WebApp) {
+            const webapp = window.Telegram.WebApp;
+            webapp.expand();
+            const user = webapp.initDataUnsafe.user;
+            
+            if (user) {
+                const tgNickname = user.username || user.first_name;
+                const tgId = String(user.id);
+                
+                // Определяем роль по Telegram ID
+                let role = isAdminByTelegramId(tgId) ? "admin" : "user";
+                
+                // Ищем существующего пользователя
+                let existing = registeredUsers.find(u => u.telegramId === tgId);
+                if (existing) {
+                    currentUser = existing;
+                    if (isAdminByTelegramId(tgId)) currentUser.role = "admin";
+                } else {
+                    currentUser = {
+                        nickname: tgNickname,
+                        telegramId: tgId,
+                        role: role,
+                        avatar: null,
+                        online: true
+                    };
+                    registeredUsers.push(currentUser);
+                }
+                saveAll();
+                renderApp();
+                return;
+            }
+        }
+        
+        // Если не в Telegram — показываем обычный вход (для разработки/тестов)
+        let html = `<div style="max-width:500px; margin:100px auto; background:white; border-radius:40px; padding:40px; text-align:center;">
+            <h2>TRANSFERBIZ</h2><p>Вход в платформу</p>
+            <p style="font-size:0.8rem; color:#666;">Откройте сайт через Telegram для автоматического входа</p>
+            <hr style="margin:16px 0;">
+            <input type="text" id="loginNick" placeholder="Никнейм" style="width:100%;"><br>
+            <div style="margin:16px 0;"><label><input type="radio" name="role" value="user" checked> Посетитель</label> &nbsp;
+            <label><input type="radio" name="role" value="admin"> Администратор</label></div>
+            <div id="adminPwdDiv" style="display:none;"><input type="password" id="adminPwd" placeholder="Пароль" style="width:100%;"></div>
+            <button id="loginBtn">Войти</button>
+        </div>`;
+        document.getElementById("appRoot").innerHTML = html;
+        
+        document.querySelectorAll("input[name='role']").forEach(r => r.onchange = () => {
+            document.getElementById("adminPwdDiv").style.display = r.value === "admin" ? "block" : "none";
+        });
+        
+        document.getElementById("loginBtn").onclick = () => {
+            let nick = document.getElementById("loginNick").value.trim();
+            let isAdmin = document.querySelector("input[name='role']:checked").value === "admin";
+            if(!nick) { alert("Введите ник"); return; }
+            if(isAdmin) {
+                let pwd = document.getElementById("adminPwd").value;
+                if(pwd !== ADMIN_PASSWORD) { alert("Неверный пароль"); return; }
+                let existing = registeredUsers.find(u => u.nickname === nick);
+                if(existing) currentUser = existing;
+                else { registeredUsers.push({ nickname: nick, role: "admin", avatar: null, online: true }); currentUser = registeredUsers[registeredUsers.length-1]; }
+            } else {
+                let existing = registeredUsers.find(u => u.nickname === nick);
+                if(existing) currentUser = existing;
+                else { registeredUsers.push({ nickname: nick, role: "user", avatar: null, online: true }); currentUser = registeredUsers[registeredUsers.length-1]; }
+            }
+            saveAll();
+            renderApp();
+        };
+    }
+    
+    function renderApp() {
+        let userAvatarHtml = currentUser.avatar ? `<img src="${currentUser.avatar}" class="user-avatar">` : `<div class="user-avatar">${currentUser.nickname.charAt(0).toUpperCase()}</div>`;
+        let menuHtml = `<div class="header"><div class="logo"><h1>TRANSFERBIZ</h1><p>Бизарская Премьер Лига</p></div>
+            <div class="user-info" onclick="openProfileEditor()">${userAvatarHtml}<span>${currentUser.nickname}</span><span>${currentUser.role === "admin" ? "👑 Админ" : "👤 Пользователь"}</span></div><button id="logoutBtn" style="background:#3a2c2c;">Выйти</button></div>
+            <div class="flex-row"><div class="side-menu" id="sideMenu"></div><div class="content-area" id="mainContent"></div></div>
+            <footer>TransferBiz · победа=5, ничья=3 · Чат через Telegram</footer>`;
+        document.getElementById("appRoot").innerHTML = menuHtml;
+        
+        const sections = [
+            { name: "Главная", section: "home" }, { name: "БПЛ таблица", section: "bpl_table" },
+            { name: "2 лига таблица", section: "league2_table" }, { name: "Матчи", section: "matches" },
+            { name: "Клубы", section: "clubs" }, { name: "Трансферы", section: "transfers" },
+            { name: "Поиск игроков", section: "search" }, { name: "Топ-10", section: "top10" },
+            { name: "Рекорды", section: "records" }, { name: "Спонсоры", section: "sponsors" },
+            { name: "Кубок", section: "cup" }, { name: "Суперкубок", section: "supercup" },
+            { name: "Вики", section: "wiki" }, { name: "Таблица по годам", section: "history" },
+            { name: "Пользователи", section: "users" }, { name: "Личные сообщения", section: "pm" },
+            { name: "AI Помощник", section: "ai" }
+        ];
+        if(currentUser.role === "admin") sections.push({ name: "Админ-панель", section: "admin" });
+        
+        let menuDiv = document.getElementById("sideMenu");
+        sections.forEach(item => {
+            let a = document.createElement("a");
+            a.innerText = item.name;
+            a.setAttribute("data-section", item.section);
+            a.onclick = () => { document.querySelectorAll(".side-menu a").forEach(l=>l.classList.remove("active")); a.classList.add("active"); renderContent(item.section); };
+            menuDiv.appendChild(a);
+        });
+        
+        let chatFab = document.createElement("div"); chatFab.className = "chat-fab"; chatFab.innerText = "💬";
+        let chatWin = document.createElement("div"); chatWin.className = "chat-window";
+        chatWin.innerHTML = `<div class="chat-header"><span>ЧАТ</span><button id="closeChat" style="background:none;">✕</button></div>
+            <div class="chat-messages-area" id="chatMsgs"></div>
+            <div class="chat-input-row"><input id="chatInput" placeholder="Сообщение..."><button id="sendChat">➤</button></div>`;
+        document.body.appendChild(chatFab); document.body.appendChild(chatWin);
+        chatFab.onclick = () => chatWin.classList.toggle("open");
+        document.getElementById("closeChat").onclick = () => chatWin.classList.remove("open");
+        document.getElementById("sendChat").onclick = () => {
+            let inp = document.getElementById("chatInput");
+            if(inp.value.trim()) { addChatMessage(inp.value.trim()); inp.value = ""; }
+        };
+        renderChat();
+        
+        document.getElementById("logoutBtn").onclick = () => { currentUser = null; showLogin(); };
+        renderContent("home");
+        loadChatHistory();
+    }
+    
+    function renderChat() {
+        let container = document.getElementById("chatMsgs");
+        if(container) container.innerHTML = chatMessages.map(m => `<div style="padding:5px 0;">💬 ${m}</div>`).join('');
+    }
+    
+    function openProfileEditor() {
+        let modal = document.createElement("div");
+        modal.className = "modal-overlay";
+        modal.innerHTML = `<div class="modal-content" style="max-width:400px;">
+            <h2>Мой профиль</h2>
+            <div><h4>Аватар</h4><input type="file" id="avatarUpload" accept="image/*"><button onclick="uploadAvatar()">Загрузить</button></div>
+            <button onclick="this.parentElement.parentElement.remove()">Закрыть</button>
+        </div>`;
+        document.body.appendChild(modal);
+        window.uploadAvatar = () => {
+            let file = document.getElementById("avatarUpload").files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (ev) => {
+                    currentUser.avatar = ev.target.result;
+                    let idx = registeredUsers.findIndex(u => u.nickname === currentUser.nickname);
+                    if(idx !== -1) registeredUsers[idx].avatar = ev.target.result;
+                    saveAll();
+                    modal.remove();
+                    renderApp();
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+    }
+    
+    function renderUsersPage() {
+        let html = `<div class="info-card"><h3>👥 Все пользователи</h3>`;
+        registeredUsers.forEach(u => {
+            let avatarHtml = u.avatar ? `<img src="${u.avatar}" class="user-avatar-small">` : `<div class="user-avatar-small">${u.nickname.charAt(0).toUpperCase()}</div>`;
+            html += `<div class="user-item">
+                <div style="display:flex; align-items:center; gap:12px;">${avatarHtml}<span><b>${u.nickname}</b> ${u.role === "admin" ? "👑" : "👤"} ${u.online ? "🟢" : "⚫"}</span></div>
+                ${u.nickname !== currentUser.nickname ? `<button class="small" onclick="startPrivateChat('${u.nickname}')">💬 Написать</button>` : ""}
+            </div>`;
+        });
+        html += `</div>`;
+        document.getElementById("mainContent").innerHTML = html;
+        window.startPrivateChat = (toUser) => {
+            let dialogId = [currentUser.nickname, toUser].sort().join("_");
+            if(!privateMessages[dialogId]) privateMessages[dialogId] = [];
+            showPrivateChatDialog(toUser);
+        };
+    }
+    
+    function renderPMPage() {
+        let myDialogs = {};
+        for(let key in privateMessages) {
+            if(key.includes(currentUser.nickname)) {
+                let otherUser = key.split("_").find(u => u !== currentUser.nickname);
+                if(otherUser) myDialogs[otherUser] = privateMessages[key];
+            }
+        }
+        let html = `<div class="info-card"><h3>💬 Личные сообщения</h3>`;
+        if(Object.keys(myDialogs).length === 0) html += `<p>Нет диалогов</p>`;
+        else {
+            html += `<table class="league-table"><thead><th>Собеседник</th><th>Последнее сообщение</th><th></th></thead><tbody>`;
+            for(let user in myDialogs) {
+                let lastMsg = myDialogs[user][myDialogs[user].length-1];
+                html += `<td>${user}</td><td>${lastMsg?.text?.substring(0,30) || ""}${lastMsg?.from === currentUser.nickname ? " (Вы)" : ""}</td>
+                        <td><button class="small" onclick="showPrivateChatDialog('${user}')">Открыть</button></td></tr>`;
+            }
+            html += `</tbody></table>`;
+        }
+        html += `</div>`;
+        document.getElementById("mainContent").innerHTML = html;
+    }
+    
+    window.showPrivateChatDialog = function(toUser) {
+        let dialogId = [currentUser.nickname, toUser].sort().join("_");
+        if(!privateMessages[dialogId]) privateMessages[dialogId] = [];
+        let messages = privateMessages[dialogId];
+        
+        let modal = document.createElement("div");
+        modal.className = "modal-overlay";
+        modal.innerHTML = `<div class="modal-content pm-modal">
+            <h3>💬 Диалог с ${toUser}</h3>
+            <div class="pm-messages" id="pmMessagesContainer">${messages.map(m => `<div class="pm-message ${m.from === currentUser.nickname ? 'own' : 'other'}"><b>${m.from}:</b> ${m.text}<br><small>${m.time || ""}</small></div>`).join('')}</div>
+            <div><input type="text" id="pmInput" placeholder="Сообщение..." style="width:70%;"><button onclick="sendPrivateMessage('${toUser}')">Отправить</button></div>
+            <button onclick="this.parentElement.parentElement.remove()">Закрыть</button>
+        </div>`;
+        document.body.appendChild(modal);
+        let container = document.getElementById("pmMessagesContainer");
+        if(container) container.scrollTop = container.scrollHeight;
+    };
+    
+    window.sendPrivateMessage = function(toUser) {
+        let input = document.getElementById("pmInput");
+        let text = input.value.trim();
+        if(!text) return;
+        let dialogId = [currentUser.nickname, toUser].sort().join("_");
+        if(!privateMessages[dialogId]) privateMessages[dialogId] = [];
+        privateMessages[dialogId].push({
+            from: currentUser.nickname,
+            to: toUser,
+            text: text,
+            time: new Date().toLocaleString()
+        });
+        saveAll();
+        showPrivateChatDialog(toUser);
+    };
+    
+    function renderTable(league) {
+        let stats = league === "bpl" ? bplStats : league2Stats;
+        let clubs = league === "bpl" ? BPL_CLUBS : LEAGUE2_CLUBS;
+        let sorted = [...clubs].sort((a,b)=>(stats[b]?.points||0)-(stats[a]?.points||0));
+        let html = `<div class="info-card"><h3>${league === "bpl" ? "БИЗАРСКАЯ ПРЕМЬЕР ЛИГА" : "2 ЛИГА"} (победа=5, ничья=3)</h3><table class="league-table"><thead><th>#</th><th>Клуб</th><th>И</th><th>В</th><th>Н</th><th>П</th><th>З</th><th>П</th><th>О</th><th>Форма</th></thead><tbody>`;
+        sorted.forEach((c,idx)=>{
+            let s = stats[c] || {};
+            let club = clubsData[c];
+            let lastMatches = club?.lastMatches || [];
+            let formHtml = lastMatches.slice(0,5).map(res => `<span class="form-badge form-${res === 'W' ? 'win' : res === 'D' ? 'draw' : 'loss'}">${res === 'W' ? 'В' : res === 'D' ? 'Н' : 'П'}</span>`).join('');
+            html += `<tr>
+                <td>${idx+1}</td>
+                <td><span style="cursor:pointer;" onclick="window.showClubSquad('${c}')">${c}</span></td>
+                <td>${s.played||0}</td>
+                <td>${s.wins||0}</td>
+                <td>${s.draws||0}</td>
+                <td>${s.losses||0}</td>
+                <td>${s.goalsFor||0}</td>
+                <td>${s.goalsAgainst||0}</td>
+                <td><b>${s.points||0}</b></td>
+                <td>${formHtml || "—"}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        return html;
+    }
+    
+    window.showClubSquad = function(clubName) {
+        let club = clubsData[clubName];
+        if(!club) return;
+        
+        let playersHtml = `<h3>Состав клуба ${clubName}</h3><table class="players-table"><thead><th>Фото</th><th>Имя</th><th>Позиция</th><th>Возраст</th><th>Стоимость</th><th>Голы</th><th>Ассисты</th><th>ЖК/КК</th><th>Оценка</th>${currentUser.role === "admin" ? "<th>Действие</th>" : ""}</thead><tbody>`;
+        club.players.forEach((p, idx) => {
+            let stats = playerStats[`${clubName}_${p.name}`] || { goals: 0, assists: 0, yellowCards: 0, redCards: 0, minutes: 0, rating: 0 };
+            playersHtml += `<tr>
+                <td>${p.photo ? `<img src="${p.photo}" class="player-photo">` : "—"}${currentUser.role === "admin" ? `<br><button class="small" onclick="event.stopPropagation(); addPlayerPhoto('${clubName}', ${idx})">📷</button>` : ""}</td>
+                <td>${p.name || "—"}${currentUser.role === "admin" ? `<br><button class="small" onclick="event.stopPropagation(); editPlayerStats('${clubName}', ${idx})">📊</button>` : ""}</td>
+                <td>${p.position || "—"}</td>
+                <td>${p.age || "—"}</td>
+                <td>${p.value || 0} млн\n
+                <td>${stats.goals}</td>
+                <td>${stats.assists}</td>
+                <td>${stats.yellowCards || 0}/${stats.redCards || 0}</td>
+                <td>${stats.rating || 0}</td>
+                ${currentUser.role === "admin" ? `<td><button class="small" onclick="event.stopPropagation(); removePlayer('${clubName}', ${idx})">🗑️</button></td>` : ""}
+            </tr>`;
+        });
+        playersHtml += `</tbody><tr>`;
+        
+        if(currentUser.role === "admin") {
+            playersHtml += `<div style="margin-top:16px; padding:16px; background:#f0f3f8; border-radius:24px;">
+                <h4>➕ Добавить игрока</h4>
+                <input type="text" id="newPlayerName" placeholder="Имя" style="width:120px;">
+                <input type="text" id="newPlayerPos" placeholder="Позиция" style="width:100px;">
+                <input type="text" id="newPlayerAge" placeholder="Возраст" style="width:70px;">
+                <input type="number" id="newPlayerVal" placeholder="Стоимость (млн)" style="width:110px;">
+                <button onclick="addPlayerToClub('${clubName}')">Добавить</button>
+            </div>`;
+        }
+        
+        let modal = document.createElement("div");
+        modal.className = "modal-overlay";
+        modal.innerHTML = `<div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;"><h2>${clubName}</h2><button onclick="this.parentElement.parentElement.parentElement.remove()">✕</button></div>
+            ${playersHtml}
+        </div>`;
+        document.body.appendChild(modal);
+    };
+    
+    window.editPlayerStats = function(clubName, idx) {
+        let player = clubsData[clubName].players[idx];
+        let stats = playerStats[`${clubName}_${player.name}`] || { goals: 0, assists: 0, yellowCards: 0, redCards: 0, minutes: 0, rating: 0 };
+        let newGoals = prompt("Голы за сезон:", stats.goals);
+        let newAssists = prompt("Голевые передачи:", stats.assists);
+        let newYellow = prompt("Жёлтые карточки:", stats.yellowCards);
+        let newRed = prompt("Красные карточки:", stats.redCards);
+        let newMinutes = prompt("Сыгранные минуты:", stats.minutes);
+        let newRating = prompt("Средняя оценка (1-10):", stats.rating);
+        
+        playerStats[`${clubName}_${player.name}`] = {
+            goals: parseInt(newGoals) || 0,
+            assists: parseInt(newAssists) || 0,
+            yellowCards: parseInt(newYellow) || 0,
+            redCards: parseInt(newRed) || 0,
+            minutes: parseInt(newMinutes) || 0,
+            rating: parseFloat(newRating) || 0
+        };
+        saveAll();
+        window.showClubSquad(clubName);
+    };
+    
+    window.addPlayerToClub = function(clubName) {
+        let player = {
+            name: document.getElementById("newPlayerName").value || "Новичок",
+            position: document.getElementById("newPlayerPos").value || "—",
+            age: document.getElementById("newPlayerAge").value || "—",
+            value: parseFloat(document.getElementById("newPlayerVal").value) || 0,
+            photo: null
+        };
+        clubsData[clubName].players.push(player);
+        clubsData[clubName].totalValue = clubsData[clubName].players.reduce((s,p)=>s+(p.value||0),0);
+        saveAll();
+        document.querySelector(".modal-overlay")?.remove();
+        window.showClubSquad(clubName);
+    };
+    
+    window.removePlayer = function(clubName, idx) {
+        clubsData[clubName].players.splice(idx, 1);
+        saveAll();
+        document.querySelector(".modal-overlay")?.remove();
+        window.showClubSquad(clubName);
+    };
+    
+    window.addPlayerPhoto = function(clubName, idx) {
+        let input = document.createElement("input");
+        input.type = "file";
+        input.accept = "image/*";
+        input.onchange = (e) => {
+            let file = e.target.files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (ev) => {
+                    clubsData[clubName].players[idx].photo = ev.target.result;
+                    saveAll();
+                    document.querySelector(".modal-overlay")?.remove();
+                    window.showClubSquad(clubName);
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    };
+    
+    function renderSearchPage() {
+        let allPlayers = [];
+        for(let clubName in clubsData) {
+            clubsData[clubName].players.forEach(p => {
+                allPlayers.push({
+                    ...p,
+                    club: clubName,
+                    stats: playerStats[`${clubName}_${p.name}`] || { goals: 0, assists: 0, rating: 0 }
+                });
+            });
+        }
+        
+        let html = `<div class="info-card">
+            <h3>🔍 Поиск игроков</h3>
+            <div class="search-filters">
+                <input type="text" id="searchName" placeholder="Имя игрока" style="width:200px;">
+                <select id="searchPosition"><option value="">Все позиции</option><option>Вратарь</option><option>Защитник</option><option>Полузащитник</option><option>Нападающий</option></select>
+                <select id="searchClub"><option value="">Все клубы</option>${[...BPL_CLUBS, ...LEAGUE2_CLUBS].map(c=>`<option>${c}</option>`).join('')}</select>
+                <select id="searchAge"><option value="">Любой возраст</option><option>до 20</option><option>20-25</option><option>25-30</option><option>30+</option></select>
+                <select id="searchValue"><option value="">Любая стоимость</option><option>до 1 млн</option><option>1-5 млн</option><option>5-10 млн</option><option>10+ млн</option></select>
+                <button onclick="performSearch()">🔎 Найти</button>
+            </div>
+            <div id="searchResults"></div>
+        </div>`;
+        document.getElementById("mainContent").innerHTML = html;
+        
+        window.performSearch = function() {
+            let name = document.getElementById("searchName").value.toLowerCase();
+            let position = document.getElementById("searchPosition").value;
+            let club = document.getElementById("searchClub").value;
+            let ageFilter = document.getElementById("searchAge").value;
+            let valueFilter = document.getElementById("searchValue").value;
+            
+            let filtered = allPlayers.filter(p => {
+                if(name && !p.name.toLowerCase().includes(name)) return false;
+                if(position && p.position !== position) return false;
+                if(club && p.club !== club) return false;
+                if(ageFilter) {
+                    let age = parseInt(p.age);
+                    if(ageFilter === "до 20" && age >= 20) return false;
+                    if(ageFilter === "20-25" && (age < 20 || age > 25)) return false;
+                    if(ageFilter === "25-30" && (age < 25 || age > 30)) return false;
+                    if(ageFilter === "30+" && age < 30) return false;
+                }
+                if(valueFilter) {
+                    let val = p.value;
+                    if(valueFilter === "до 1 млн" && val >= 1) return false;
+                    if(valueFilter === "1-5 млн" && (val < 1 || val > 5)) return false;
+                    if(valueFilter === "5-10 млн" && (val < 5 || val > 10)) return false;
+                    if(valueFilter === "10+ млн" && val < 10) return false;
+                }
+                return true;
+            });
+            
+            let resultsHtml = `<h4>Найдено: ${filtered.length}</h4><table class="league-table"><thead><th>Фото</th><th>Имя</th><th>Клуб</th><th>Позиция</th><th>Возраст</th><th>Стоимость</th><th>Голы</th><th>Ассисты</th><th>Оценка</th></thead><tbody>`;
+            filtered.slice(0, 50).forEach(p => {
+                resultsHtml += `<tr>
+                    <td>${p.photo ? `<img src="${p.photo}" class="player-photo">` : "—"}</td>
+                    <td>${p.name}</td>
+                    <td>${p.club}</td>
+                    <td>${p.position}</td>
+                    <td>${p.age}</td>
+                    <td>${p.value} млн\n
+                    <td>${p.stats?.goals || 0}</td>
+                    <td>${p.stats?.assists || 0}</td>
+                    <td>${p.stats?.rating || 0}</td>
+                </td>`;
+            });
+            resultsHtml += `</tbody></td>`;
+            document.getElementById("searchResults").innerHTML = resultsHtml;
+        };
+    }
+    
+    function renderTop10Page() {
+        let allPlayers = [];
+        for(let clubName in clubsData) {
+            clubsData[clubName].players.forEach(p => {
+                allPlayers.push({ ...p, club: clubName, stats: playerStats[`${clubName}_${p.name}`] || { goals: 0, assists: 0, rating: 0 } });
+            });
+        }
+        
+        let mostExpensive = [...allPlayers].sort((a,b) => b.value - a.value).slice(0,10);
+        let youngest = [...allPlayers].sort((a,b) => parseInt(a.age) - parseInt(b.age)).slice(0,10);
+        let oldest = [...allPlayers].sort((a,b) => parseInt(b.age) - parseInt(a.age)).slice(0,10);
+        let topScorers = [...allPlayers].sort((a,b) => (b.stats?.goals || 0) - (a.stats?.goals || 0)).slice(0,10);
+        let topAssists = [...allPlayers].sort((a,b) => (b.stats?.assists || 0) - (a.stats?.assists || 0)).slice(0,10);
+        let topRating = [...allPlayers].sort((a,b) => (b.stats?.rating || 0) - (a.stats?.rating || 0)).slice(0,10);
+        
+        let html = `<div class="info-card">
+            <h3>🏆 Топ-10 самых дорогих игроков</h3>
+            <table class="league-table"><thead><th>Имя</th><th>Клуб</th><th>Стоимость (млн €)</th></thead><tbody>${mostExpensive.map(p=>`<tr><td>${p.name}</td><td>${p.club}<td><td>${p.value}</td></tr>`).join('')}</tbody></table>
+            <h3>🌟 Топ-10 самых молодых</h3>
+            <table class="league-table"><thead><th>Имя</th><th>Клуб</th><th>Возраст</th></thead><tbody>${youngest.map(p=>`<tr><td>${p.name}</td><td>${p.club}</td><td>${p.age}</td></tr>`).join('')}</tbody></table>
+            <h3>👴 Топ-10 самых возрастных</h3>
+            <table class="league-table"><thead><th>Имя</th><th>Клуб</th><th>Возраст</th></thead><tbody>${oldest.map(p=>`<tr><td>${p.name}</td><td>${p.club}</td><td>${p.age}</td></tr>`).join('')}</tbody></table>
+            <h3>⚽ Топ-10 бомбардиров</h3>
+            <table class="league-table"><thead><th>Имя</th><th>Клуб</th><th>Голы</th></thead><tbody>${topScorers.map(p=>`<tr><td>${p.name}</td><td>${p.club}</td><td>${p.stats.goals}</td></tr>`).join('')}</tbody></tr>
+            <h3>🎯 Топ-10 ассистентов</h3>
+            <table class="league-table"><thead><th>Имя</th><th>Клуб</th><th>Ассисты</th></thead><tbody>${topAssists.map(p=>`<tr><td>${p.name}</td><td>${p.club}</td><td>${p.stats.assists}</td></tr>`).join('')}</tbody></tr>
+            <h3>⭐ Топ-10 по средней оценке</h3>
+            <table class="league-table"><thead><th>Имя</th><th>Клуб</th><th>Оценка</th></thead><tbody>${topRating.map(p=>`<tr><td>${p.name}</td><td>${p.club}</td><td>${p.stats.rating}</td></tr>`).join('')}</tbody></table>
+        </div>`;
+        document.getElementById("mainContent").innerHTML = html;
+    }
+    
+    function renderRecordsPage() {
+        let allPlayers = [];
+        for(let clubName in clubsData) {
+            clubsData[clubName].players.forEach(p => {
+                allPlayers.push({ ...p, club: clubName, stats: playerStats[`${clubName}_${p.name}`] || { goals: 0, assists: 0, rating: 0 } });
+            });
+        }
+        
+        let topScorer = [...allPlayers].sort((a,b) => (b.stats?.goals || 0) - (a.stats?.goals || 0))[0];
+        let topAssist = [...allPlayers].sort((a,b) => (b.stats?.assists || 0) - (a.stats?.assists || 0))[0];
+        let topRating = [...allPlayers].sort((a,b) => (b.stats?.rating || 0) - (a.stats?.rating || 0))[0];
+        let mostExpensive = [...allPlayers].sort((a,b) => b.value - a.value)[0];
+        let youngest = [...allPlayers].sort((a,b) => parseInt(a.age) - parseInt(b.age))[0];
+        let bplSorted = [...BPL_CLUBS].sort((a,b) => bplStats[b]?.points - bplStats[a]?.points);
+        
+        let html = `<div class="info-card"><h3>🏆 Рекорды лиги</h3>
+        <p>⚽ Лучший бомбардир: ${topScorer?.name || "—"} (${topScorer?.club || "—"}) — ${topScorer?.stats?.goals || 0} голов</p>
+        <p>🎯 Лучший ассистент: ${topAssist?.name || "—"} (${topAssist?.club || "—"}) — ${topAssist?.stats?.assists || 0} передач</p>
+        <p>⭐ Лучший по оценкам: ${topRating?.name || "—"} (${topRating?.club || "—"}) — ${topRating?.stats?.rating || 0} баллов</p>
+        <p>💰 Самый дорогой игрок: ${mostExpensive?.name || "—"} (${mostExpensive?.club || "—"}) — ${mostExpensive?.value || 0} млн €</p>
+        <p>🌟 Самый молодой игрок: ${youngest?.name || "—"} (${youngest?.age || "—"} лет, ${youngest?.club || "—"})</p>
+        <p>🏆 Лидер БПЛ: ${bplSorted[0] || "—"} (${bplStats[bplSorted[0]]?.points || 0} очков)</p>
+        </div>`;
+        document.getElementById("mainContent").innerHTML = html;
+    }
+    
+    function renderClubsPage() {
+        let html = `<div class="info-card"><h3>Клубы БПЛ</h3><div class="clubs-grid">`;
+        BPL_CLUBS.forEach(c => {
+            let club = clubsData[c];
+            let emblemHtml = club?.emblem ? `<img src="${club.emblem}" class="club-emblem-main">` : `<div class="club-emblem-main" style="background:#eef2f8; display:flex; align-items:center; justify-content:center;">⚽</div>`;
+            let stadiumPhotoHtml = club?.stadium?.photo ? `<img src="${club.stadium.photo}" class="stadium-photo">` : `<div class="stadium-photo" style="background:#eef2f8; display:flex; align-items:center; justify-content:center;">📷 Стадион</div>`;
+            let trophiesList = [];
+            let t = club?.trophies || {};
+            if(t.bpl > 0) trophiesList.push(`🏆 БПЛ: ${t.bpl}`);
+            if(t.league2 > 0) trophiesList.push(`🏅 2 лига: ${t.league2}`);
+            if(t.supercup > 0) trophiesList.push(`⭐ Суперкубок: ${t.supercup}`);
+            if(t.cupBizaria > 0) trophiesList.push(`🏆 Кубок: ${t.cupBizaria}`);
+            if(t.lch > 0) trophiesList.push(`🇪🇺 ЛЧ: ${t.lch}`);
+            if(t.le > 0) trophiesList.push(`🇪🇺 ЛЕ: ${t.le}`);
+            if(t.lk > 0) trophiesList.push(`🇪🇺 ЛК: ${t.lk}`);
+            let trophiesHtml = trophiesList.length ? trophiesList.join(' · ') : "Нет трофеев";
+            
+            html += `<div class="club-card-main" onclick="window.showClubSquad('${c}')">
+                <div class="club-header">${emblemHtml}<div class="club-name-main">${c}</div></div>
+                <div class="club-stadium-info">
+                    <div>🏟️ ${club?.stadium?.name || "Городской стадион"} (${club?.stadium?.capacity || 0} мест)</div>
+                    ${stadiumPhotoHtml}
+                </div>
+                <div class="club-trophies">${trophiesHtml}</div>
+                <div class="club-footer">👥 Состав: ${club?.players?.length || 0} игроков</div>
+            </div>`;
+        });
+        html += `</div><h3 style="margin-top:24px;">2 лига</h3><div class="clubs-grid">`;
+        LEAGUE2_CLUBS.forEach(c => {
+            let club = clubsData[c];
+            let emblemHtml = club?.emblem ? `<img src="${club.emblem}" class="club-emblem-main">` : `<div class="club-emblem-main" style="background:#eef2f8; display:flex; align-items:center; justify-content:center;">⚽</div>`;
+            let stadiumPhotoHtml = club?.stadium?.photo ? `<img src="${club.stadium.photo}" class="stadium-photo">` : `<div class="stadium-photo" style="background:#eef2f8; display:flex; align-items:center; justify-content:center;">📷 Стадион</div>`;
+            let trophiesList = [];
+            let t = club?.trophies || {};
+            if(t.bpl > 0) trophiesList.push(`🏆 БПЛ: ${t.bpl}`);
+            if(t.league2 > 0) trophiesList.push(`🏅 2 лига: ${t.league2}`);
+            if(t.supercup > 0) trophiesList.push(`⭐ Суперкубок: ${t.supercup}`);
+            if(t.cupBizaria > 0) trophiesList.push(`🏆 Кубок: ${t.cupBizaria}`);
+            if(t.lch > 0) trophiesList.push(`🇪🇺 ЛЧ: ${t.lch}`);
+            if(t.le > 0) trophiesList.push(`🇪🇺 ЛЕ: ${t.le}`);
+            if(t.lk > 0) trophiesList.push(`🇪🇺 ЛК: ${t.lk}`);
+            let trophiesHtml = trophiesList.length ? trophiesList.join(' · ') : "Нет трофеев";
+            
+            html += `<div class="club-card-main" onclick="window.showClubSquad('${c}')">
+                <div class="club-header">${emblemHtml}<div class="club-name-main">${c}</div></div>
+                <div class="club-stadium-info">
+                    <div>🏟️ ${club?.stadium?.name || "Городской стадион"} (${club?.stadium?.capacity || 0} мест)</div>
+                    ${stadiumPhotoHtml}
+                </div>
+                <div class="club-trophies">${trophiesHtml}</div>
+                <div class="club-footer">👥 Состав: ${club?.players?.length || 0} игроков</div>
+            </div>`;
+        });
+        html += `</div></div>`;
+        return html;
+    }
+    
+    function renderContent(section) {
+        let div = document.getElementById("mainContent");
+        if(!div) return;
+        if(section === "home") {
+            div.innerHTML = `<div class="info-card"><h3>Новости</h3>${globalNews.map(n=>`<div>📢 ${n}</div>`).join('')}</div>`;
+        }
+        else if(section === "bpl_table") { div.innerHTML = renderTable("bpl"); }
+        else if(section === "league2_table") { div.innerHTML = renderTable("league2"); }
+        else if(section === "clubs") { div.innerHTML = renderClubsPage(); }
+        else if(section === "search") { renderSearchPage(); }
+        else if(section === "top10") { renderTop10Page(); }
+        else if(section === "records") { renderRecordsPage(); }
+        else if(section === "users") { renderUsersPage(); }
+        else if(section === "pm") { renderPMPage(); }
+        else if(section === "ai") { renderAIPage(); }
+        else if(section === "transfers") {
+            let transfersHistory = JSON.parse(localStorage.getItem("transferbiz_transfers_history") || "[]");
+            let html = `<div class="info-card"><h3>📋 Трансферные слухи</h3><ul>${transferRumors.map(r => `<li>🔁 ${r}</li>`).join('')}</ul>`;
+            if(currentUser.role === "admin") {
+                html += `<div><input type="text" id="newRumor" placeholder="Новый слух..."><button onclick="addRumor()">➕ Добавить слух</button></div>`;
+            }
+            html += `<h3>✅ Завершённые переходы</h3>`;
+            if(transfersHistory.length === 0) html += `<p>Пока нет завершённых переходов</p>`;
+            else {
+                html += `<table class="league-table"><thead><th>Дата</th><th>Игрок</th><th>Из клуба</th><th>В клуб</th><th>Сумма</th>${currentUser.role === "admin" ? "<th></th>" : ""}</thead><tbody>`;
+                transfersHistory.forEach((t, idx) => {
+                    html += `<td>${t.date}</td><td>${t.playerName}</td><td>${t.fromClub}</td><td>${t.toClub}</td><td>${t.amount} млн</tr>
+                        ${currentUser.role === "admin" ? `<td><button class="small" onclick="deleteTransfer(${idx})">🗑️</button></td>` : ""}
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            }
+            if(currentUser.role === "admin") {
+                let allPlayers = [];
+                for(let clubName in clubsData) {
+                    clubsData[clubName].players.forEach(p => { allPlayers.push({ name: p.name, club: clubName, value: p.value }); });
+                }
+                html += `<div style="margin-top:20px; padding:16px; background:#f0f3f8; border-radius:24px;">
+                    <h4>✍️ Добавить переход</h4>
+                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                        <select id="transferPlayerSelect"><option value="">Выберите игрока</option>${allPlayers.map(p => `<option value="${p.name}|${p.club}|${p.value}">${p.name} (${p.club}, ${p.value} млн)</option>`).join('')}</select>
+                        <select id="transferToClubSelect"><option value="">В какой клуб</option>${[...BPL_CLUBS, ...LEAGUE2_CLUBS].map(c => `<option>${c}</option>`).join('')}</select>
+                        <input type="number" id="transferAmount" placeholder="Сумма (млн €)" style="width:120px;">
+                        <button onclick="addTransfer()">✅ Добавить переход</button>
+                    </div>
+                </div>`;
+            }
+            html += `</div>`;
+            div.innerHTML = html;
+            
+            window.addRumor = function() { let inp=document.getElementById("newRumor"); if(inp.value){ transferRumors.unshift(inp.value); saveAll(); renderContent("transfers"); } };
+            window.addTransfer = function() {
+                let playerInfo = document.getElementById("transferPlayerSelect").value;
+                let toClub = document.getElementById("transferToClubSelect").value;
+                let amount = parseFloat(document.getElementById("transferAmount").value);
+                if(!playerInfo || !toClub || isNaN(amount)) { alert("Заполните все поля"); return; }
+                let [playerName, fromClub, oldValue] = playerInfo.split("|");
+                if(fromClub === toClub) { alert("Нельзя перевести игрока в тот же клуб"); return; }
+                let fromClubData = clubsData[fromClub];
+                let playerIndex = fromClubData.players.findIndex(p => p.name === playerName);
+                if(playerIndex === -1) { alert("Игрок не найден"); return; }
+                let player = fromClubData.players[playerIndex];
+                fromClubData.players.splice(playerIndex, 1);
+                if(!isNaN(amount) && amount > 0) player.value = amount;
+                clubsData[toClub].players.push(player);
+                for(let c in clubsData) clubsData[c].totalValue = clubsData[c].players.reduce((sum, p) => sum + (p.value || 0), 0);
+                let transfersHistory = JSON.parse(localStorage.getItem("transferbiz_transfers_history") || "[]");
+                transfersHistory.unshift({ date: new Date().toLocaleString(), playerName: player.name, fromClub: fromClub, toClub: toClub, amount: amount });
+                localStorage.setItem("transferbiz_transfers_history", JSON.stringify(transfersHistory));
+                saveAll(); renderContent("transfers");
+                alert(`Переход ${player.name} из ${fromClub} в ${toClub} за ${amount} млн € оформлен!`);
+            };
+            window.deleteTransfer = function(idx) {
+                let transfersHistory = JSON.parse(localStorage.getItem("transferbiz_transfers_history") || "[]");
+                transfersHistory.splice(idx, 1);
+                localStorage.setItem("transferbiz_transfers_history", JSON.stringify(transfersHistory));
+                renderContent("transfers");
+            };
+        }
+        else if(section === "matches") {
+            if(currentUser.role !== "admin") { div.innerHTML = `<div class="info-card">Только для администратора</div>`; return; }
+            div.innerHTML = `<div class="info-card"><h3>Ввод результатов</h3>
+                <select id="matchLeague"><option value="bpl">БПЛ</option><option value="league2">2 лига</option></select>
+                <select id="homeClub"></select><select id="awayClub"></select>
+                <input id="hg" placeholder="0" style="width:60px;"> : <input id="ag" placeholder="0" style="width:60px;">
+                <button id="addMatch">Добавить</button>
+                <div id="matchHistoryList"></div></div>`;
+            function updateClubs() {
+                let league = document.getElementById("matchLeague").value;
+                let clubs = league === "bpl" ? BPL_CLUBS : LEAGUE2_CLUBS;
+                document.getElementById("homeClub").innerHTML = clubs.map(c=>`<option>${c}</option>`).join('');
+                document.getElementById("awayClub").innerHTML = clubs.map(c=>`<option>${c}</option>`).join('');
+            }
+            document.getElementById("matchLeague").onchange = updateClubs;
+            updateClubs();
+            document.getElementById("addMatch").onclick = () => {
+                let league = document.getElementById("matchLeague").value;
+                let home = document.getElementById("homeClub").value;
+                let away = document.getElementById("awayClub").value;
+                let hg = parseInt(document.getElementById("hg").value) || 0;
+                let ag = parseInt(document.getElementById("ag").value) || 0;
+                let stats = league === "bpl" ? bplStats : league2Stats;
+                let h = stats[home], a = stats[away];
+                h.played++; a.played++;
+                h.goalsFor += hg; h.goalsAgainst += ag;
+                a.goalsFor += ag; a.goalsAgainst += hg;
+                if(hg > ag) { h.wins++; a.losses++; }
+                else if(ag > hg) { a.wins++; h.losses++; }
+                else { h.draws++; a.draws++; }
+                recalcPoints(league);
+                if(clubsData[home]) clubsData[home].lastMatches = [hg > ag ? 'W' : hg === ag ? 'D' : 'L', ...(clubsData[home].lastMatches || [])].slice(0,5);
+                if(clubsData[away]) clubsData[away].lastMatches = [ag > hg ? 'W' : hg === ag ? 'D' : 'L', ...(clubsData[away].lastMatches || [])].slice(0,5);
+                matchHistory[league].unshift(`${home} ${hg}:${ag} ${away}`);
+                saveAll();
+                renderContent("matches");
+            };
+            let histDiv = document.getElementById("matchHistoryList");
+            if(histDiv) histDiv.innerHTML = (matchHistory[document.getElementById("matchLeague")?.value] || []).map(m=>`<div>⚽ ${m}</div>`).join('');
+        }
+        else if(section === "sponsors") {
+            let html = `<div class="info-card"><h3>Спонсоры клубов</h3><table class="league-table"><thead><th>Клуб</th><th>Спонсор</th><th>Сумма (млн €)</th><th>Длительность</th>${currentUser.role === "admin" ? "<th></th>" : ""}</thead><tbody>`;
+            for(let club in sponsorsData) {
+                let sp = sponsorsData[club];
+                if(currentUser.role === "admin") {
+                    html += `<tr>
+                        <td>${club}</td>
+                        <td><input type="text" id="spName_${club}" value="${sp.name}" style="width:140px;"></td>
+                        <td><input type="number" id="spAmount_${club}" value="${sp.amount}" style="width:80px;"></td>
+                        <td><input type="text" id="spDur_${club}" value="${sp.duration}" style="width:120px;"></tr>
+                        <td><button onclick="saveSponsor('${club}')">💾 Сохранить</button></td>
+                    </tr>`;
+                } else {
+                    html += `<tr>
+                        <td>${club}</td>
+                        <td>${sp.name}</td>
+                        <td>${sp.amount} млн\n
+                        <td>${sp.duration}</td>
+                    </tr>`;
+                }
+            }
+            html += `</tbody></table></div>`;
+            div.innerHTML = html;
+            
+            window.saveSponsor = function(club) {
+                let newName = document.getElementById(`spName_${club}`).value;
+                let newAmount = parseFloat(document.getElementById(`spAmount_${club}`).value);
+                let newDuration = document.getElementById(`spDur_${club}`).value;
+                sponsorsData[club] = { name: newName, amount: newAmount, duration: newDuration };
+                saveAll();
+                renderContent("sponsors");
+                alert(`Спонсор для ${club} обновлён!`);
+            };
+        }
+        else if(section === "cup") {
+            div.innerHTML = `<div class="info-card"><h3>Кубок Бизарии</h3><p>Участники: ${cupBizaria.participants.join(", ")}</p><p>Победители: ${cupBizaria.winners.map(w=>`${w.year} - ${w.club}`).join(", ")}</p>${currentUser.role==="admin"?`<div><input id="newWinnerClub" placeholder="Клуб"><input id="newWinnerYear" placeholder="Год"><button onclick="addWinner()">Добавить</button></div>`:""}</div>`;
+            window.addWinner = () => { let c=document.getElementById("newWinnerClub").value, y=document.getElementById("newWinnerYear").value; if(c&&y){ cupBizaria.winners.push({club:c,year:y}); saveAll(); renderContent("cup"); } };
+        }
+        else if(section === "supercup") {
+            div.innerHTML = `<div class="info-card"><h3>Суперкубок</h3><p>Обладатель: ${cupBizaria.supercup?.winner} (${cupBizaria.supercup?.year})</p>${currentUser.role==="admin"?`<div><input id="newSuperWinner" placeholder="Клуб"><input id="newSuperYear" placeholder="Год"><button onclick="updateSuper()">Обновить</button></div>`:""}</div>`;
+            window.updateSuper = () => { let w=document.getElementById("newSuperWinner").value, y=parseInt(document.getElementById("newSuperYear").value); if(w&&y){ cupBizaria.supercup={winner:w,year:y}; saveAll(); renderContent("supercup"); } };
+        }
+        else if(section === "wiki") {
+            let html = `<div class="info-card"><h3>Вики</h3>`;
+            wikiArticles.forEach((a,idx)=>{ html += `<div style="margin-bottom:16px; border:1px solid #eef2f8; border-radius:20px; padding:12px;"><b>${a.title}</b><p>${a.content}</p><i>${a.author}</i>${currentUser.role==="admin"?`<button onclick="editWiki(${idx})">✏️</button><button onclick="delWiki(${idx})">🗑️</button>`:""}</div>`; });
+            html += `${currentUser.role==="admin"?`<div><input id="wikiTitle" placeholder="Заголовок"><textarea id="wikiContent" placeholder="Содержание" rows="3"></textarea><button onclick="addWiki()">Добавить</button></div>`:""}</div>`;
+            div.innerHTML = html;
+            window.addWiki = () => { let t=document.getElementById("wikiTitle").value, c=document.getElementById("wikiContent").value; if(t&&c){ wikiArticles.push({title:t,content:c,author:currentUser.nickname}); saveAll(); renderContent("wiki"); } };
+            window.editWiki = (idx) => { let nc=prompt("Новое содержание",wikiArticles[idx].content); if(nc){ wikiArticles[idx].content=nc; saveAll(); renderContent("wiki"); } };
+            window.delWiki = (idx) => { wikiArticles.splice(idx,1); saveAll(); renderContent("wiki"); };
+        }
+        else if(section === "history") {
+            let years = Object.keys(seasonStandings);
+            let html = `<div class="info-card"><h3>Таблица по годам</h3><select id="seasonSelect"><option value="">Выберите сезон</option>${years.map(y=>`<option>${y}</option>`).join('')}</select><button onclick="viewSeason()">Показать</button><div id="seasonTable"></div>`;
+            if(currentUser.role==="admin") html += `<div><input id="newSeason" placeholder="Новый сезон (2025/2026)"><button onclick="saveSeason()">Сохранить текущую таблицу</button></div>`;
+            html += `</div>`;
+            div.innerHTML = html;
+            window.viewSeason = () => { 
+                let s=document.getElementById("seasonSelect").value; 
+                if(s && seasonStandings[s]){ 
+                    let data = seasonStandings[s]; 
+                    let html = `<h4>Сезон ${s}</h4>`; 
+                    for(let l in data) html += renderTableData(data[l], l==="bpl"?"БПЛ":"2 лига"); 
+                    document.getElementById("seasonTable").innerHTML = html; 
+                } 
+            };
+            window.saveSeason = () => { 
+                let s=document.getElementById("newSeason").value; 
+                if(s){ 
+                    seasonStandings[s] = { bpl: JSON.parse(JSON.stringify(bplStats)), league2: JSON.parse(JSON.stringify(league2Stats)) }; 
+                    saveAll(); 
+                    renderContent("history"); 
+                } 
+            };
+            function renderTableData(stats,name){ 
+                if(!stats) return ""; 
+                let clubs = Object.keys(stats); 
+                let sorted = clubs.sort((a,b)=>(stats[b]?.points||0)-(stats[a]?.points||0)); 
+                let html = `<h5>${name}</h5><table class="league-table"><thead><th>Клуб</th><th>О</th><th>В</th><th>Н</th><th>П</th></thead><tbody>`; 
+                sorted.forEach(c=>{ 
+                    let s=stats[c]; 
+                    html += `<tr><td>${c}</td><td>${s.points}</td><td>${s.wins}</td><td>${s.draws}</td><td>${s.losses}</td></tr>`; 
+                }); 
+                html += `</tbody><table>`; 
+                return html; 
+            }
+        }
+        else if(section === "admin" && currentUser.role === "admin") {
+            div.innerHTML = `<div class="info-card"><h3>Админ-панель</h3>
+                <button onclick="addNews()">Добавить новость</button>
+                <button onclick="resetAll()">Сбросить данные</button>
+                <div style="margin:20px 0;"><h4>Переместить клуб (drag & drop)</h4>
+                <div id="bplZone" style="background:#eef2f8; border-radius:20px; padding:12px;"><b>БПЛ</b><div id="bplList"></div></div>
+                <div id="l2Zone" style="background:#f8f2e8; border-radius:20px; padding:12px; margin-top:12px;"><b>2 лига</b><div id="l2List"></div></div></div>
+                <div><h4>Трофеи клуба</h4>
+                <select id="trophyClub">${BPL_CLUBS.concat(LEAGUE2_CLUBS).map(c=>`<option value="${c}">${c}</option>`).join('')}</select>
+                <select id="trophyType"><option value="bpl">БПЛ</option><option value="league2">2 лига</option><option value="supercup">Суперкубок</option><option value="cupBizaria">Кубок Бизарии</option><option value="lch">ЛЧ</option><option value="le">ЛЕ</option><option value="lk">ЛК</option></select>
+                <input type="number" id="trophyCount" placeholder="Количество" style="width:80px;"><button onclick="addTrophy()">Добавить трофей</button>
+                <span id="trophyResult" style="margin-left:10px;"></span></div>
+                <div><h4>Редактировать клуб</h4><select id="editClubSelect">${BPL_CLUBS.concat(LEAGUE2_CLUBS).map(c=>`<option>${c}</option>`).join('')}</select>
+                <button onclick="openClubEditor()">Редактировать клуб</button></div></div>`;
+            
+            window.openClubEditor = () => { let club = document.getElementById("editClubSelect").value; editClub(club); };
+            window.addTrophy = function() {
+                let club = document.getElementById("trophyClub").value;
+                let type = document.getElementById("trophyType").value;
+                let count = parseInt(document.getElementById("trophyCount").value);
+                if(isNaN(count) || count <= 0) { document.getElementById("trophyResult").innerText = "Введите число больше 0"; return; }
+                if(clubsData[club] && clubsData[club].trophies[type] !== undefined) {
+                    clubsData[club].trophies[type] += count;
+                    saveAll();
+                    document.getElementById("trophyResult").innerText = `Добавлено ${count} трофеев ${type} для ${club}`;
+                    setTimeout(() => { document.getElementById("trophyResult").innerText = ""; }, 3000);
+                } else { document.getElementById("trophyResult").innerText = "Ошибка: клуб или тип трофея не найден"; }
+            };
+            function renderDragLists() {
+                document.getElementById("bplList").innerHTML = BPL_CLUBS.map(c=>`<div draggable="true" data-club="${c}" style="background:#1d4e6e; color:white; padding:6px 12px; margin:6px; border-radius:40px; display:inline-block; cursor:grab;">${c}</div>`).join('');
+                document.getElementById("l2List").innerHTML = LEAGUE2_CLUBS.map(c=>`<div draggable="true" data-club="${c}" style="background:#6b4c2c; color:white; padding:6px 12px; margin:6px; border-radius:40px; display:inline-block; cursor:grab;">${c}</div>`).join('');
+                document.querySelectorAll("[draggable=true]").forEach(el => el.addEventListener("dragstart", e => e.dataTransfer.setData("text/plain", el.getAttribute("data-club"))));
+                document.getElementById("bplZone").addEventListener("dragover", e=>e.preventDefault());
+                document.getElementById("l2Zone").addEventListener("dragover", e=>e.preventDefault());
+                document.getElementById("bplZone").addEventListener("drop", e=>{ e.preventDefault(); let c=e.dataTransfer.getData("text/plain"); moveClub(c, "bpl"); });
+                document.getElementById("l2Zone").addEventListener("drop", e=>{ e.preventDefault(); let c=e.dataTransfer.getData("text/plain"); moveClub(c, "league2"); });
+            }
+            window.moveClub = (club, target) => {
+                if(BPL_CLUBS.includes(club) && target==="league2"){ BPL_CLUBS.splice(BPL_CLUBS.indexOf(club),1); LEAGUE2_CLUBS.push(club); }
+                else if(LEAGUE2_CLUBS.includes(club) && target==="bpl"){ LEAGUE2_CLUBS.splice(LEAGUE2_CLUBS.indexOf(club),1); BPL_CLUBS.push(club); }
+                else return;
+                initStats(); initSponsors(); saveAll(); renderContent("admin");
+            };
+            setTimeout(renderDragLists, 50);
+            window.addNews = () => { let t=prompt("Новость"); if(t){ globalNews.unshift(t); saveAll(); alert("Добавлено"); } };
+            window.resetAll = () => { if(confirm("Сбросить всё?")){ localStorage.clear(); location.reload(); } };
+        }
+    }
+    
+    function editClub(clubName) {
+        let club = clubsData[clubName];
+        if(!club) return;
+        
+        let modal = document.createElement("div");
+        modal.className = "modal-overlay";
+        modal.innerHTML = `<div class="modal-content">
+            <h2>Редактирование ${clubName}</h2>
+            <div><h4>Эмблема</h4><input type="file" id="emblemUpload" accept="image/*"><button onclick="uploadEmblem('${clubName}')">Загрузить</button></div>
+            <div><h4>Стадион</h4><input type="text" id="stadiumName" value="${club.stadium.name}" placeholder="Название"><input type="number" id="stadiumCapacity" value="${club.stadium.capacity}" placeholder="Вместимость"><input type="file" id="stadiumPhotoUpload" accept="image/*"><button onclick="uploadStadiumPhoto('${clubName}')">Загрузить фото</button></div>
+            <button onclick="updateStadiumInfo('${clubName}')">Сохранить стадион</button>
+            <button onclick="this.parentElement.parentElement.remove()">Закрыть</button>
+        </div>`;
+        document.body.appendChild(modal);
+        
+        window.uploadEmblem = (cn) => {
+            let file = document.getElementById("emblemUpload").files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (ev) => { clubsData[cn].emblem = ev.target.result; saveAll(); alert("Эмблема обновлена"); modal.remove(); };
+                reader.readAsDataURL(file);
+            }
+        };
+        window.uploadStadiumPhoto = (cn) => {
+            let file = document.getElementById("stadiumPhotoUpload").files[0];
+            if(file) {
+                let reader = new FileReader();
+                reader.onload = (ev) => { clubsData[cn].stadium.photo = ev.target.result; saveAll(); alert("Фото стадиона обновлено"); };
+                reader.readAsDataURL(file);
+            }
+        };
+        window.updateStadiumInfo = (cn) => {
+            clubsData[cn].stadium.name = document.getElementById("stadiumName").value;
+            clubsData[cn].stadium.capacity = parseInt(document.getElementById("stadiumCapacity").value);
+            saveAll();
+            alert("Стадион обновлён");
+            modal.remove();
+        };
+    }
+    
+    loadAll();
+    showLogin();
+</script>
+</body>
+</html>
